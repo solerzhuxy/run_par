@@ -42,17 +42,17 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
     fn = 'STR_STR.OUT'
     for i in range(len(worker_paths)):
         chdir(worker_paths[i])
-        try:
-            n = find_nhead(fn) # number of head lines
-            p = popen('cat %s'%fn)
-            lines = p.readlines()
-            if i==0:  str_lines.append(lines[0])
-            valid_lines=lines[n:]
-            for j in range(len(valid_lines)):
-                str_lines.append(valid_lines[j])
-        except:
-            chdir(path0)
-            raise IOError,'Failed during cat %s'%fn
+        #        try:
+        n = find_nhead(fn) # number of head lines
+        p = popen('cat %s'%fn)
+        lines = p.readlines()
+        if i==0:  str_lines.append(lines[0])
+        valid_lines=lines[n:]
+        for j in range(len(valid_lines)):
+            str_lines.append(valid_lines[j])
+        #        except:
+        # chdir(path0)
+        # raise IOError,'Failed during cat %s'%fn
         chdir(path0)
     fstr = open(fn,'w')
     for i in range(len(str_lines)):

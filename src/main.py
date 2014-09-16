@@ -3,11 +3,13 @@ Collection of applications of RP
 """
 from os import getcwd, sep, chdir, system
 from make_tar import n_active,ivgvar20in_workers,worker
+import time
+
 def diff(orig_path=None,max_np=3,noti=False):
     """
     NIST-Diffraction for SF/IG/EPS(hkl) measurements
     on 'deformed' polycrystals under various plastic deformation
-    The parallel calculation is carried out on various plastic 
+    The parallel calculation is carried out on various plastic
     levels
 
     1. prepare a tar (make_tar.py)
@@ -15,10 +17,11 @@ def diff(orig_path=None,max_np=3,noti=False):
     3. Obtain paths of 'mktemp'ed directories
     4. Run parallel
     5. Gather calculation results from the paths
-    6. Reassemble data file 
+    6. Reassemble data file
        - expected to be themost tedious process
     """
     if orig_path==None: orig_path = getcwd()
+    t0 = time.time()
 
     # 1. prepare a tar (make_tar.py)
     fn_tars = ivgvar20in_workers(path=orig_path,max_np=max_np)
@@ -38,7 +41,6 @@ def diff(orig_path=None,max_np=3,noti=False):
         EVPSCIN_mod_ivg20(wd=temp_dir,nth=i)
     print '-- Tar distribution completed\n'
 
-
     # 3. Gather workers / and run parallel
     workers=[]; cmds=[]
     for i in range(n_works):
@@ -52,24 +54,22 @@ def diff(orig_path=None,max_np=3,noti=False):
         except:
             chdir(orig_path)
             raise IOError, 'Error in worker for EVPSC'
-
         workers.append(p)
         n = n_active(workers)
-
-        if n<max_np:pass
+        if n<max_np: pass
         else:
             ## Wait until a work is finished if n>max_np
             while not(n<max_np):
+                time.sleep(5)
                 n = n_active(workers)
 
-
     # 4. Wait until all processes are finished.
-    fin = False
-    while not(fin):
-        n=n_active(workers)
-        if n==0: fin = True
-    print 'Parallel calculations are finished' 
 
+    n=1000 #
+    while (n!=0):
+        time.sleep(5)
+        n = n_active(workers)
+    print 'Parallel calculations are finished'
 
     ## post calculation activity
     from assemble_dat import cat_ivgvar20
@@ -82,10 +82,17 @@ def diff(orig_path=None,max_np=3,noti=False):
     # 5. Gather calculation results from the paths
     # 6. Reassemble data file
     #    - expected to be themost tedious process
-
     cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
 
+    print 'Parallel Job for EVPSC diff (ivgvar.eq.20) is finished at %s'%orig_path
+    t1 = time.time(); elapsed = t1 - t0
+    print 'Elapsed time (hh:mm:ss)  %s'%time.strftime('%H:%M:%S',time.gmtime(elapsed))
 
+    if noti:
+        import noti
+        noti.mail_me(subj='Parallel run for EVPSC diff is completed',
+                     contents='Job finished under %s'%orig_path,
+                     addr='youngung.jeong@gmail.com')
 
 
 """
@@ -95,7 +102,7 @@ from tempfile import mkdtemp
 from shutil import move
 def mkd(dir='/tmp',prefix='EVPSC_diff_ivg20_'):
     """
-    Make a temporary directories (mktemp) and return 
+    Make a temporary directories (mktemp) and return
     the path
     """
     return mkdtemp(dir=dir,prefix=prefix)
@@ -127,7 +134,7 @@ def mkd_mv_extract(dir='/tmp',prefix='EVPSC_diff_ivg20_',src=None):
 
 def EVPSCIN_mod_ivg20(wd,nth):
     """
-    Modify the EVPSC.IN file in *wd* directory, to run 
+    Modify the EVPSC.IN file in *wd* directory, to run
     only for *nth* snapshot (nth starts from 0)
     """
     path0=getcwd()
