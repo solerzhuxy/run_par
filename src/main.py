@@ -3,8 +3,7 @@ Collection of applications of RP
 """
 from os import getcwd, sep, chdir, system
 from make_tar import n_active,ivgvar20in_workers,worker
-def diff(orig_path=None,max_np=5,
-         noti=False):
+def diff(orig_path=None,max_np=3,noti=False):
     """
     NIST-Diffraction for SF/IG/EPS(hkl) measurements
     on 'deformed' polycrystals under various plastic deformation
@@ -30,8 +29,9 @@ def diff(orig_path=None,max_np=5,
     paths2workers = []
     for i in range(n_works):
         # 2-1. Make temp dir and distribute/extract tars
-        temp_dir = mkd_mv_extract(dir='/tmp',prefix='EVPSC_diff_ivg20_',src=
-                          fn_tars[i])
+        temp_dir = mkd_mv_extract(
+            dir='/tmp',prefix='EVPSC_diff_ivg20_',
+            src=fn_tars[i])
         # 2-2. Obtain paths of 'mktemp'ed directories
         paths2workers.append(temp_dir)
         # 2-3. Modify the 'EVPSC.IN' file
@@ -85,7 +85,7 @@ def diff(orig_path=None,max_np=5,
 
     cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
 
-    
+
 
 
 """
@@ -152,4 +152,9 @@ def EVPSCIN_mod_ivg20(wd,nth):
 
 if __name__=='__main__':
     import getopt, sys
-    diff(max_np=3)
+
+    ## defaults
+    max_np = 3
+    orig_path = getcwd()
+
+    diff(orig_path=orig_path, max_np=max_np)

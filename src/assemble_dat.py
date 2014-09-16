@@ -23,7 +23,8 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
       1. int_els_ph*iph*.out
       2. igstrain_fbulk_ph1.out
       3. STR_STR.OUT
-      4. Need more to add??
+      4. igstrain_bix_ph1.out (sff_converter uses this file)
+      5. Need more to add??
 
     =========
     Arguments
@@ -34,7 +35,7 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
     ## based on the order in the worker_paths.
     path0 = getcwd() # valid in case orig differs from cwd
 
-    fns = ['STR_STR.OUT','int_els_ph*.out','igstrain_fbulk_ph*.out']
+    fns = ['STR_STR.OUT','int_els_ph*.out','igstrain_fbulk_ph*.out','igstrain_bix_ph1.out']
 
     ## 'STR_STR.OUT' file
     str_lines = []
@@ -59,11 +60,8 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
     fstr.close()
 
 
-
-
     ## 'igstrain_fbulk_ph*.out'
-    ## -- 'assumed a single phase'
-
+    ## -- Assume single phase
     igstrainfbulk_lines = []
     fn = 'igstrain_fbulk_ph1.out'
     for i in range(len(worker_paths)):
@@ -73,7 +71,7 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
             n = 1 ## hardwired
             p = popen('cat %s'%fn)
             lines = p.readlines()
-            if i==0: 
+            if i==0:
                 for j in range(n):
                     igstrainfbulk_lines.append(lines[j])
             valid_lines = lines[n:]
@@ -89,9 +87,37 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
         f_igstrainfbulk.write(igstrainfbulk_lines[i])
     f_igstrainfbulk.close()
 
-    ## 'int_els_ph*.out'
-    ## -- 'assumed a single phase'
 
+    ## 'igstrain_bix_ph1.out'
+    ## -- Assume single phase
+
+    igstrainbix_lines = []
+    fn = 'igstrain_bix_ph1.out'
+    for i in range(len(worker_paths)):
+        chdir(worker_paths[i])
+        try:
+            ## n = find_nhead(fn)
+            n = 1 ## hardwired
+            p = popen('cat %s'%fn)
+            lines = p.readlines()
+            if i==0:
+                for j in range(n):
+                    igstrainbix_lines.append(lines[j])
+            valid_lines = lines[n:]
+            for j in range(len(valid_lines)):
+                igstrainbix_lines.append(valid_lines[j])
+        except:
+            chdir(path0)
+            raise IOError, 'Failed during cat %s'%fn
+        chdir(path0)
+
+    f_igstrainbix = open(fn,'w')
+    for i in range(len(igstrainbix_lines)):
+        f_igstrainbix.write(igstrainbix_lines[i])
+    f_igstrainbix.close()
+
+    ## 'int_els_ph*.out'
+    ## -- Assume single phase
     intels_lines = []
     fn = 'int_els_ph1.out'
     for i in range(len(worker_paths)):
@@ -100,7 +126,7 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
             n = find_nhead(fn)
             p = popen('cat %s'%fn)
             lines = p.readlines()
-            if i==0: 
+            if i==0:
                 for j in range(n):
                     intels_lines.append(lines[j])
             valid_lines = lines[n:]

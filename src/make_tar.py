@@ -81,7 +81,7 @@ def ivgvar20in(path='.'):
     """
     Make a collection of tar(s) for ivgvar.eq.20
     """
-    fn_line_number_container=[9,11,15]
+    fn_line_number_container=[9,11,15,39]
     common_fns_container = []
 
     ## -- Read lines from 'EVPSC.IN'
