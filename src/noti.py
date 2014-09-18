@@ -1,5 +1,6 @@
 ## notification template
 import os
+
 def mail_me(mail_path='/usr/bin/mail', 
 
             subj='Parallel Job Finished',

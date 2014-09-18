@@ -24,11 +24,14 @@ def diff(orig_path=None,max_np=3,noti=False):
     t0 = time.time()
 
     # 1. prepare a tar (make_tar.py)
-    fn_tars = ivgvar20in_workers(path=orig_path,max_np=max_np)
+    fn_tars, strain_paths, ids_paths = ivgvar20in_workers(path=orig_path,max_np=max_np)
+    npaths = len(strain_paths)
+    print '%i kinds of strain paths are given'%npaths
+
     n_works = len(fn_tars)
     print '-- Tar file preparation completed\n'
 
-    # 2. make temp directory and distribute the prepared tars.
+    # 2. make temp directories and distribute the prepared tars.
     paths2workers = []
     for i in range(n_works):
         # 2-1. Make temp dir and distribute/extract tars
@@ -65,24 +68,31 @@ def diff(orig_path=None,max_np=3,noti=False):
 
     # 4. Wait until all processes are finished.
 
-    n=1000 #
+    n=1000
     while (n!=0):
         time.sleep(5)
         n = n_active(workers)
     print 'Parallel calculations are finished'
 
     ## post calculation activity
-    from assemble_dat import cat_ivgvar20
+    from assemble_dat import cat_ivgvar20, tar_ivgvar20
     """
     List of important files:
     ['ig_mod_ph1.out','igstrain_bix_ph1.out','igstrain_fbulk_ph1.out',
     'igstrain_load_ph1.out','igstrain_unload_ph1.out','int_els_ph1.out',
     'int_eps_ph1.out','pepshkl.out','sf_ph1.out',sf_fac_ph1.out','STR_STR.OUT']
     """
+
     # 5. Gather calculation results from the paths
-    # 6. Reassemble data file
+    #    if various kinds of paths were considered
+    if npaths>1:
+        tar_fns = tar_ivgvar20(orig=orig_path,worker_paths=paths2workers,
+                               strain_paths=strain_paths,
+                               ids=ids_paths)
+    # 6. Reassemble data file if a single path was considered
     #    - expected to be themost tedious process
-    cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
+    elif npaths==1:
+        cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
 
     print 'Parallel Job for EVPSC diff (ivgvar.eq.20) is finished at %s'%orig_path
     t1 = time.time(); elapsed = t1 - t0
