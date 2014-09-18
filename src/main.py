@@ -67,8 +67,7 @@ def diff(orig_path=None,max_np=3,noti=False):
                 n = n_active(workers)
 
     # 4. Wait until all processes are finished.
-
-    n=1000
+    n=1000 #
     while (n!=0):
         time.sleep(5)
         n = n_active(workers)
@@ -91,19 +90,15 @@ def diff(orig_path=None,max_np=3,noti=False):
                                ids=ids_paths)
     # 6. Reassemble data file if a single path was considered
     #    - expected to be themost tedious process
-    elif npaths==1:
-        cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
-
+    cat_ivgvar20(orig=orig_path,worker_paths=paths2workers)
     print 'Parallel Job for EVPSC diff (ivgvar.eq.20) is finished at %s'%orig_path
     t1 = time.time(); elapsed = t1 - t0
     print 'Elapsed time (hh:mm:ss)  %s'%time.strftime('%H:%M:%S',time.gmtime(elapsed))
-
     if noti:
         import noti
         noti.mail_me(subj='Parallel run for EVPSC diff is completed',
                      contents='Job finished under %s'%orig_path,
                      addr='youngung.jeong@gmail.com')
-
 
 """
 In Below are hints for mkmv
@@ -170,8 +165,22 @@ def EVPSCIN_mod_ivg20(wd,nth):
 if __name__=='__main__':
     import getopt, sys
 
+    try: opts, args = getopt.getopt(
+        sys.argv[1:],
+        'c:')
+    except getopt.GetoptError, err: print str(err); sys.exit(2)
+
+
     ## defaults
     max_np = 3
     orig_path = getcwd()
 
-    diff(orig_path=orig_path, max_np=max_np)
+
+    for o, a in opts:
+        try:
+            if o=='-c:': max_np=int(a)
+        except ValueError:
+            print 'Given value was:', a
+            sys.exit(2)
+
+    diff(orig_path=orig_path,max_np=max_np,noti=True)
