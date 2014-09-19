@@ -10,7 +10,7 @@ are very tedious...
 
 
 """
-from os import getcwd, chdir, sep, popen, system
+from os import getcwd, chdir, sep, popen, system, remove
 from MP.mat.mech import find_nhead
 
 def tar_ivgvar20(orig,worker_paths=[],strain_paths=[],ids=[],
@@ -33,21 +33,24 @@ def tar_ivgvar20(orig,worker_paths=[],strain_paths=[],ids=[],
         _worker_paths_ = []
         for j in range(len(ids[i])):
             _worker_paths_.append(worker_paths[ids[i][j]])
+        print _worker_paths_
         cat_ivgvar20(orig,worker_paths=_worker_paths_)
 
         ## tar.gz for relevant paths
-        tar_fn = 'EVPSC_diff_%s_%s.tar.gz'%(
-            strain_path[i],
-            tempfile.mktemp(dir=orig).sep[-1])
+
+        tar_fn = '%s_hkl_%s.tar.gz'%(
+            strain_paths[i][0].split(sep)[-2],
+            tempfile.mktemp(dir=orig).split(sep)[-1])
+
         tar_fns.append(tar_fn)
         cmd = 'tar -cvzf %s '%tar_fn
         for j in range(len(tar_members)):
             member = tar_members[j]
             cmd = '%s %s'%(cmd, member)
-        os.system(cmd)
+        system(cmd)
         ##
         for j in range(len(tar_members)):
-            os.remove(tar_members[j])
+            remove(tar_members[j])
 
     print 'Following tar.gz files generated:'
     for i in range(npaths):
@@ -171,24 +174,24 @@ def cat_ivgvar20(orig,worker_paths=[],*args):
     fn = 'int_els_ph1.out'
     for i in range(len(worker_paths)):
         chdir(worker_paths[i])
-        try:
-            n = find_nhead(fn)
-            p = popen('cat %s'%fn)
-            lines = p.readlines()
-            if i==0:
-                for j in range(n):
-                    intels_lines.append(lines[j])
-            valid_lines = lines[n:]
-            for j in range(len(valid_lines)):
-                ## fix the step line
-                l = valid_lines[j]
-                stp_col = '6i'%(i+1)
-                l[:6] = stp_col
-                ##
-                intels_lines.append(l)
-        except:
-            chdir(path0)
-            raise IOError, 'Failed during cat %s'%fn
+        #try:
+        n = find_nhead(fn)
+        p = popen('cat %s'%fn)
+        lines = p.readlines()
+        if i==0:
+            for j in range(n):
+                intels_lines.append(lines[j])
+        valid_lines = lines[n:]
+        for j in range(len(valid_lines)):
+            ## fix the step line
+            l = valid_lines[j]
+            # stp_col = '6i'%(i+1)
+            # l[:6] = stp_col
+            ##
+            intels_lines.append(l)
+        #except:
+            # chdir(path0)
+            # raise IOError, 'Failed during cat %s'%fn
         chdir(path0)
 
     f_intels = open(fn,'w')
