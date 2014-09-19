@@ -31,7 +31,7 @@ def tar_ivgvar20(orig,worker_paths=[],strain_paths=[],ids=[],
     for i in range(npaths):
         ## one path at a time
         _worker_paths_ = []
-        for j in range(ids[i]):
+        for j in range(len(ids[i])):
             _worker_paths_.append(worker_paths[ids[i][j]])
         cat_ivgvar20(orig,worker_paths=_worker_paths_)
 
