@@ -5,7 +5,7 @@ from os import getcwd, sep, chdir, system
 from make_tar import n_active,ivgvar20in_workers,worker
 import time
 
-def diff(orig_path=None,max_np=3,noti=False):
+def diff(orig_path=None,max_np=3,noti=False,max_np_tar=1):
     """
     NIST-Diffraction for SF/IG/EPS(hkl) measurements
     on 'deformed' polycrystals under various plastic deformation
@@ -24,7 +24,8 @@ def diff(orig_path=None,max_np=3,noti=False):
     t0 = time.time()
 
     # 1. prepare a tar (make_tar.py)
-    fn_tars, strain_paths, ids_paths = ivgvar20in_workers(path=orig_path,max_np=max_np)
+    fn_tars, strain_paths, ids_paths = ivgvar20in_workers(
+        path=orig_path,max_np=max_np_tar)
     npaths = len(strain_paths)
     print '%i kinds of strain paths are given'%npaths
 
